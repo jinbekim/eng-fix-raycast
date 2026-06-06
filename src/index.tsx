@@ -205,7 +205,10 @@ export default function Command() {
       try {
         const text = await getSelectedText();
         if (text && text.trim().length > 0) {
-          setOriginalText(text.trim());
+          const trimmed = text.trim();
+          setOriginalText(trimmed);
+          setSearchText(trimmed);          // 검색창 텍스트 초기값으로 채움
+          setDebouncedSearchText(trimmed); // 디바우닝 딜레이 없이 즉시 API 트리거하기 위해 세팅
         }
       } catch (e) {
         // 선택된 텍스트가 없는 경우는 조용히 넘어감
