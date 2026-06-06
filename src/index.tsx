@@ -95,13 +95,17 @@ async function fetchGeminiDrafts(apiKey: string, prompt: string): Promise<DraftO
 // 1. 결과 리스트 컴포넌트 (상세 영작 폼에서 사용)
 function DraftResultList(props: { options: DraftOption[] }) {
   return (
-    <List navigationTitle="AI 영작 결과">
+    <List navigationTitle="AI 영작 결과" isShowingDetail={props.options.length > 0}>
       <List.Section title="AI 제안 영작문">
         {props.options.map((opt, idx) => (
           <List.Item
             key={idx}
             title={opt.text}
-            subtitle={opt.explanation}
+            detail={
+              <List.Item.Detail
+                markdown={`### 💡 영작 제안 ${idx + 1}\n\n${opt.text}\n\n---\n\n### 📝 설명 (뉘앙스)\n${opt.explanation}`}
+              />
+            }
             actions={
               <ActionPanel>
                 <Action.Paste title="Paste Correction" content={opt.text} />
@@ -275,6 +279,7 @@ export default function Command() {
       searchText={searchText}
       onSearchTextChange={setSearchText}
       searchBarPlaceholder="번역/영작할 문장을 입력하거나 검색..."
+      isShowingDetail={correctedOptions.length > 0}
       searchBarAccessory={
         <List.Dropdown
           tooltip="Select Tone"
@@ -295,7 +300,11 @@ export default function Command() {
             <List.Item
               key={idx}
               title={opt.text}
-              subtitle={opt.explanation}
+              detail={
+                <List.Item.Detail
+                  markdown={`### 💡 영작 제안 ${idx + 1}\n\n${opt.text}\n\n---\n\n### 📝 설명 (뉘앙스)\n${opt.explanation}`}
+                />
+              }
               actions={
                 <ActionPanel>
                   <Action.Paste title="Paste Correction" content={opt.text} />
