@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ActionPanel, Action, List, Form, Clipboard, getSelectedText, showToast, Toast, getPreferenceValues, useNavigation } from "@raycast/api";
 import { useState, useEffect, useRef } from "react";
 
@@ -222,7 +221,7 @@ export default function Command() {
           setSearchText(trimmed);          // 검색창 텍스트 초기값으로 채움
           setDebouncedSearchText(trimmed); // 즉시 API 트리거
         }
-      } catch (e) {
+      } catch {
         // 선택된 텍스트가 없는 경우는 조용히 넘어감
       } finally {
         // 5. 사용자의 원래 클립보드 복구 (Raycast API 명세에 맞춰 Clipboard.copy 사용)
