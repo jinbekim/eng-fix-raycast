@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { ActionPanel, Action, List, Form, getSelectedText, showToast, Toast, getPreferenceValues, useNavigation } from "@raycast/api";
+import { ActionPanel, Action, List, Form, Clipboard, getSelectedText, showToast, Toast, getPreferenceValues, useNavigation } from "@raycast/api";
 import { useState, useEffect, useRef } from "react";
 
 interface Preferences {
@@ -199,19 +199,36 @@ export default function Command() {
   // 중복 API 호출 방지를 위한 ref
   const lastCallRef = useRef({ text: "", tone: "" });
 
-  // 최초 마운트 시 드래그한 텍스트 감지
+  // 최초 마운트 시 드래그한 텍스트 감지 (클립보드 폴백 버그 방지)
   useEffect(() => {
     async function fetchSelectedText() {
+      let originalClipboard = "";
+      const marker = `__EMPTY_SELECTION_${Date.now()}__`;
       try {
+        // 1. 기존 클립보드 백업
+        const cbText = await Clipboard.readText();
+        originalClipboard = cbText || "";
+
+        // 2. 클립보드에 임시 마커 주입
+        await Clipboard.writeText(marker);
+
+        // 3. getSelectedText 호출 (Cmd+C 시뮬레이션 트리거)
         const text = await getSelectedText();
-        if (text && text.trim().length > 0) {
+        
+        // 4. 결과물이 마커와 같지 않고 존재할 때만 드래그 텍스트로 인정
+        if (text && text !== marker && text.trim().length > 0) {
           const trimmed = text.trim();
           setOriginalText(trimmed);
           setSearchText(trimmed);          // 검색창 텍스트 초기값으로 채움
-          setDebouncedSearchText(trimmed); // 디바우닝 딜레이 없이 즉시 API 트리거하기 위해 세팅
+          setDebouncedSearchText(trimmed); // 즉시 API 트리거
         }
       } catch (e) {
         // 선택된 텍스트가 없는 경우는 조용히 넘어감
+      } finally {
+        // 5. 사용자의 원래 클립보드 복구
+        if (originalClipboard && originalClipboard !== marker) {
+          await Clipboard.writeText(originalClipboard);
+        }
       }
     }
     fetchSelectedText();
