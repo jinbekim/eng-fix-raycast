@@ -2,11 +2,15 @@ export interface Preferences {
   geminiApiKey: string;
   configFilePath?: string;
   suggestionCount?: string;
+  defaultExplanationStyle?: "simple" | "verbose";
 }
 
 export interface DraftOption {
   text: string;
   explanation: string;
+  vocabulary?: string;
+  isLoadingVocabulary?: boolean;
+  vocabularyError?: string;
 }
 
 export interface ToneOption {

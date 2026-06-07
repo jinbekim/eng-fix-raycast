@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { showToast, Toast } from "@raycast/api";
 import { DraftOption } from "../types";
-import { getPrompt } from "../utils/prompt";
-import { fetchGeminiDrafts } from "../utils/api";
+import { getPrompt, getVocabularyPrompt } from "../utils/prompt";
+import { fetchGeminiDrafts, fetchGeminiVocabulary } from "../utils/api";
 
 export function useGeminiDrafts() {
   const [isLoading, setIsLoading] = useState(false);
@@ -45,5 +45,23 @@ export function useGeminiDrafts() {
     }
   };
 
-  return { isLoading, generateDrafts };
+  const generateVocabulary = async (
+    apiKey: string | undefined,
+    originalText: string,
+    correctedText: string,
+  ): Promise<string | null> => {
+    const key = apiKey?.trim();
+    if (!key) return null;
+
+    try {
+      const promptText = getVocabularyPrompt(originalText, correctedText);
+      const vocabulary = await fetchGeminiVocabulary(key, promptText);
+      return vocabulary;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  return { isLoading, generateDrafts, generateVocabulary };
 }

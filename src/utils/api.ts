@@ -43,7 +43,42 @@ export async function fetchGeminiDrafts(apiKey: string, prompt: string): Promise
 
   const parsed = JSON.parse(jsonStr);
   if (Array.isArray(parsed)) {
-    return parsed;
+    return parsed.map((item: unknown) => {
+      if (item && typeof item === "object" && "text" in item) {
+        const obj = item as { text: unknown; explanation?: unknown };
+        return {
+          text: String(obj.text || ""),
+          explanation: String(obj.explanation || ""),
+        };
+      }
+      if (typeof item === "string") {
+        return { text: item, explanation: "" };
+      }
+      return { text: String(item), explanation: "" };
+    });
   }
   throw new Error("Invalid response format from Gemini");
+}
+
+export async function fetchGeminiVocabulary(apiKey: string, prompt: string): Promise<string> {
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.4 },
+      }),
+    },
+  );
+
+  const data = (await response.json()) as GeminiResponse;
+
+  if (!response.ok) {
+    throw new Error(data?.error?.message || "Unknown API Error");
+  }
+
+  const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  return responseText.trim();
 }

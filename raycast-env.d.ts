@@ -13,7 +13,9 @@ type ExtensionPreferences = {
   /** JSON Configuration File - Select a custom JSON configuration file (e.g., config.json) for custom tones. */
   "configFilePath"?: string,
   /** Number of Suggestions - How many English versions Gemini should suggest */
-  "suggestionCount": "1" | "2" | "3" | "4" | "5"
+  "suggestionCount": "1" | "2" | "3" | "4" | "5",
+  /** Default Explanation Style - Select the default detail level for Gemini's explanations */
+  "defaultExplanationStyle": "simple" | "verbose"
 }
 
 /** Preferences accessible in all the extension's commands */

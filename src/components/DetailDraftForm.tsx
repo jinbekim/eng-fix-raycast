@@ -42,7 +42,7 @@ export function DetailDraftForm(props: {
     }
     const results = await generateDrafts(props.geminiApiKey, text, tone, customPrompt);
     if (results) {
-      push(<DraftResultList options={results} />);
+      push(<DraftResultList options={results} originalText={text} />);
     }
   };
 

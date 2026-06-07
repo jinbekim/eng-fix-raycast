@@ -60,11 +60,44 @@
       "default": "3",
       "required": false,
       "data": [
-        { "title": "1 Suggestion", "value": "1" },
-        { "title": "2 Suggestions", "value": "2" },
-        { "title": "3 Suggestions (Default)", "value": "3" },
-        { "title": "4 Suggestions", "value": "4" },
-        { "title": "5 Suggestions", "value": "5" }
+        {
+          "title": "1 Suggestion",
+          "value": "1"
+        },
+        {
+          "title": "2 Suggestions",
+          "value": "2"
+        },
+        {
+          "title": "3 Suggestions (Default)",
+          "value": "3"
+        },
+        {
+          "title": "4 Suggestions",
+          "value": "4"
+        },
+        {
+          "title": "5 Suggestions",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "name": "defaultExplanationStyle",
+      "title": "Default Explanation Style",
+      "description": "Select the default detail level for Gemini's explanations",
+      "type": "dropdown",
+      "default": "simple",
+      "required": false,
+      "data": [
+        {
+          "title": "Simple (Nuance only)",
+          "value": "simple"
+        },
+        {
+          "title": "Verbose (Nuance + Vocabulary)",
+          "value": "verbose"
+        }
       ]
     }
   ],
