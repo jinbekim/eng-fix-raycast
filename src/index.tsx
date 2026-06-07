@@ -10,18 +10,21 @@ import {
 } from "@raycast/api";
 import { useState, useEffect } from "react";
 import { Preferences, DraftOption } from "./types";
-import { getPrompt, fetchGeminiDrafts } from "./utils/gemini";
+import { getPrompt, fetchGeminiDrafts, getActiveTones } from "./utils/gemini";
 import { DetailDraftForm } from "./components/DetailDraftForm";
 
 // 3. 메인 번역/영작 뷰 (List)
 export default function Command() {
+  const preferences = getPreferenceValues<Preferences>();
+  const activeTones = getActiveTones(preferences);
+  const defaultToneId = activeTones[0]?.id || "general";
+
   const [searchText, setSearchText] = useState("");
-  const [selectedTone, setSelectedTone] = useState("general");
+  const [selectedTone, setSelectedTone] = useState(defaultToneId);
   const [correctedOptions, setCorrectedOptions] = useState<DraftOption[]>([]);
   const [resultsText, setResultsText] = useState("");
-  const [resultsTone, setResultsTone] = useState("general");
+  const [resultsTone, setResultsTone] = useState(defaultToneId);
   const [isLoading, setIsLoading] = useState(false);
-  const preferences = getPreferenceValues<Preferences>();
 
   const handleSearch = async (targetText: string, tone: string) => {
     if (!targetText.trim()) return;
@@ -102,11 +105,9 @@ export default function Command() {
           storeValue={true}
           onChange={(newValue) => setSelectedTone(newValue)}
         >
-          <List.Dropdown.Item title="General" value="general" />
-          <List.Dropdown.Item title="Business & Polite" value="professional" />
-          <List.Dropdown.Item title="Casual & Friendly" value="casual" />
-          <List.Dropdown.Item title="Concise & Direct" value="concise" />
-          <List.Dropdown.Item title="Academic" value="academic" />
+          {activeTones.map((t) => (
+            <List.Dropdown.Item key={t.id} title={t.title} value={t.id} />
+          ))}
         </List.Dropdown>
       }
     >

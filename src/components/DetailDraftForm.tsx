@@ -1,7 +1,8 @@
-import { ActionPanel, Action, Form, showToast, Toast, useNavigation } from "@raycast/api";
+import { ActionPanel, Action, Form, showToast, Toast, useNavigation, getPreferenceValues } from "@raycast/api";
 import { useState } from "react";
-import { getPrompt, fetchGeminiDrafts } from "../utils/gemini";
+import { getPrompt, fetchGeminiDrafts, getActiveTones } from "../utils/gemini";
 import { DraftResultList } from "./DraftResultList";
+import { Preferences } from "../types";
 
 export function DetailDraftForm(props: {
   defaultText: string;
@@ -10,8 +11,14 @@ export function DetailDraftForm(props: {
 }) {
   const { push } = useNavigation();
   const [isLoading, setIsLoading] = useState(false);
+  const preferences = getPreferenceValues<Preferences>();
+  const activeTones = getActiveTones(preferences);
+  const defaultToneId = activeTones.find((t) => t.id === props.defaultTone)
+    ? props.defaultTone
+    : (activeTones[0]?.id || "general");
+
   const [text, setText] = useState(props.defaultText);
-  const [tone, setTone] = useState(props.defaultTone);
+  const [tone, setTone] = useState(defaultToneId);
   const [customPrompt, setCustomPrompt] = useState("");
 
   const handleSubmit = async () => {
@@ -69,11 +76,9 @@ export function DetailDraftForm(props: {
         onChange={setText}
       />
       <Form.Dropdown id="tone" title="Tone Style" value={tone} onChange={setTone}>
-        <Form.Dropdown.Item title="General (기본 교정)" value="general" />
-        <Form.Dropdown.Item title="Polite & Professional (비즈니스 이메일)" value="professional" />
-        <Form.Dropdown.Item title="Casual & Friendly (일상 회화/메신저)" value="casual" />
-        <Form.Dropdown.Item title="Concise & Direct (간결하게)" value="concise" />
-        <Form.Dropdown.Item title="Academic (논문/보고서)" value="academic" />
+        {activeTones.map((t) => (
+          <Form.Dropdown.Item key={t.id} title={t.title} value={t.id} />
+        ))}
       </Form.Dropdown>
       <Form.TextField
         id="customPrompt"

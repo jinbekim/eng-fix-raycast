@@ -44,6 +44,13 @@
       "description": "Your Google Gemini API Key",
       "type": "password",
       "required": true
+    },
+    {
+      "name": "configFilePath",
+      "title": "JSON Configuration File",
+      "description": "Select a custom JSON configuration file (e.g., config.json) for prompt template and custom tones.",
+      "type": "file",
+      "required": false
     }
   ],
   "title": "EngFix"

@@ -9,7 +9,9 @@
 
 type ExtensionPreferences = {
   /** Gemini API Key - Your Google Gemini API Key */
-  "geminiApiKey": string
+  "geminiApiKey": string,
+  /** JSON Configuration File - Select a custom JSON configuration file (e.g., config.json) for prompt template and custom tones. */
+  "configFilePath"?: string
 }
 
 /** Preferences accessible in all the extension's commands */
