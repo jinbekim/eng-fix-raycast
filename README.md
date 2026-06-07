@@ -123,7 +123,7 @@ AI의 번역/교정 뼈대가 되는 **기본 프롬프트 템플릿(Base Prompt
 
 - React (Raycast API Component)
 - TypeScript
-- Google Gemini API (`gemini-flash-latest` model)
+- Google Gemini API (`gemini-3.1-flash-lite` model)
 - oxlint & oxfmt (Lint & Format)
 
 ---
