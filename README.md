@@ -64,13 +64,19 @@ npm run dev
 
 ---
 
-## 설정 방법 (Gemini API Key) 🔑
+## 설정 방법 (Gemini API Key & 제안 개수 설정) 🔑
 
-이 익스텐션은 Google Gemini API를 직접 호출합니다. 따라서 개인 API Key 등록이 필요합니다.
+이 익스텐션은 Google Gemini API를 직접 호출합니다. 따라서 개인 API Key 등록이 필요하며, 제안받을 문장의 개수도 설정할 수 있습니다.
 
+### 1. Gemini API Key 등록
 1. [Google AI Studio](https://aistudio.google.com/)에서 무료로 Gemini API Key를 발급받습니다.
 2. Raycast에서 `Fix English` 명령어를 최초 실행하거나 익스텐션 설정화면으로 이동합니다.
 3. 발급받은 API Key를 **Gemini API Key** 설정 항목에 입력합니다.
+
+### 2. 제안 개수 설정 (Number of Suggestions)
+1. Raycast 설정 화면(익스텐션 명령어 포커스 상태에서 `Cmd + Shift + ,` 입력)으로 이동합니다.
+2. **Number of Suggestions** 항목에서 원하는 제안 개수(1개 ~ 5개, 기본값 3개)를 선택합니다.
+3. 화면 스페이스를 절약하고 싶다면 개수를 낮추고, 다양한 선택지를 얻고 싶다면 개수를 올려 사용하세요.
 
 ---
 
