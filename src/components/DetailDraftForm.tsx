@@ -1,8 +1,17 @@
-import { ActionPanel, Action, Form, showToast, Toast, useNavigation, getPreferenceValues } from "@raycast/api";
+import {
+  ActionPanel,
+  Action,
+  Form,
+  showToast,
+  Toast,
+  useNavigation,
+  getPreferenceValues,
+} from "@raycast/api";
 import { useState } from "react";
-import { getPrompt, fetchGeminiDrafts, getActiveTones } from "../utils/gemini";
+import { getActiveTones } from "../utils/config";
 import { DraftResultList } from "./DraftResultList";
 import { Preferences } from "../types";
+import { useGeminiDrafts } from "../hooks/useGeminiDrafts";
 
 export function DetailDraftForm(props: {
   defaultText: string;
@@ -10,16 +19,17 @@ export function DetailDraftForm(props: {
   geminiApiKey: string;
 }) {
   const { push } = useNavigation();
-  const [isLoading, setIsLoading] = useState(false);
   const preferences = getPreferenceValues<Preferences>();
   const activeTones = getActiveTones(preferences);
   const defaultToneId = activeTones.find((t) => t.id === props.defaultTone)
     ? props.defaultTone
-    : (activeTones[0]?.id || "general");
+    : activeTones[0]?.id || "general";
 
   const [text, setText] = useState(props.defaultText);
   const [tone, setTone] = useState(defaultToneId);
   const [customPrompt, setCustomPrompt] = useState("");
+
+  const { isLoading, generateDrafts } = useGeminiDrafts();
 
   const handleSubmit = async () => {
     if (!text.trim()) {
@@ -30,32 +40,9 @@ export function DetailDraftForm(props: {
       });
       return;
     }
-    const apiKey = props.geminiApiKey?.trim();
-    if (!apiKey) {
-      showToast({
-        title: "API Key Error",
-        message: "Gemini API Key가 비어있습니다. 설정에서 입력해 주세요.",
-        style: Toast.Style.Failure,
-      });
-      return;
-    }
-    setIsLoading(true);
-    showToast({ title: "Asking Gemini...", style: Toast.Style.Animated });
-    try {
-      const promptText = getPrompt(text, tone, customPrompt);
-      const results = await fetchGeminiDrafts(apiKey, promptText);
-      showToast({ title: "Drafts generated!", style: Toast.Style.Success });
+    const results = await generateDrafts(props.geminiApiKey, text, tone, customPrompt);
+    if (results) {
       push(<DraftResultList options={results} />);
-    } catch (error) {
-      const e = error as Error;
-      console.error(e);
-      showToast({
-        title: "Error",
-        message: e.message,
-        style: Toast.Style.Failure,
-      });
-    } finally {
-      setIsLoading(false);
     }
   };
 

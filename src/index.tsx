@@ -1,17 +1,10 @@
-import {
-  ActionPanel,
-  Action,
-  List,
-  Clipboard,
-  getSelectedText,
-  showToast,
-  Toast,
-  getPreferenceValues,
-} from "@raycast/api";
-import { useState, useEffect } from "react";
+import { ActionPanel, Action, List, getPreferenceValues } from "@raycast/api";
+import { useState } from "react";
 import { Preferences, DraftOption } from "./types";
-import { getPrompt, fetchGeminiDrafts, getActiveTones } from "./utils/gemini";
+import { getActiveTones } from "./utils/config";
 import { DetailDraftForm } from "./components/DetailDraftForm";
+import { useSelectedText } from "./hooks/useSelectedText";
+import { useGeminiDrafts } from "./hooks/useGeminiDrafts";
 
 // 3. 메인 번역/영작 뷰 (List)
 export default function Command() {
@@ -24,69 +17,23 @@ export default function Command() {
   const [correctedOptions, setCorrectedOptions] = useState<DraftOption[]>([]);
   const [resultsText, setResultsText] = useState("");
   const [resultsTone, setResultsTone] = useState(defaultToneId);
-  const [isLoading, setIsLoading] = useState(false);
+
+  const { isLoading, generateDrafts } = useGeminiDrafts();
 
   const handleSearch = async (targetText: string, tone: string) => {
-    if (!targetText.trim()) return;
-    setIsLoading(true);
-    showToast({ title: "Asking Gemini...", style: Toast.Style.Animated });
-    try {
-      const apiKey = preferences.geminiApiKey?.trim();
-      if (!apiKey) {
-        throw new Error("Gemini API Key가 비어있습니다. 설정에서 입력해 주세요.");
-      }
-      const promptText = getPrompt(targetText, tone);
-      const results = await fetchGeminiDrafts(apiKey, promptText);
+    const results = await generateDrafts(preferences.geminiApiKey, targetText, tone);
+    if (results) {
       setCorrectedOptions(results);
       setResultsText(targetText);
       setResultsTone(tone);
-      showToast({ title: "Corrections ready!", style: Toast.Style.Success });
-    } catch (error) {
-      const e = error as Error;
-      console.error(e);
-      showToast({
-        title: "Error",
-        message: e.message,
-        style: Toast.Style.Failure,
-      });
-    } finally {
-      setIsLoading(false);
     }
   };
 
   // 최초 마운트 시 드래그한 텍스트 감지 (클립보드 폴백 버그 방지)
-  useEffect(() => {
-    async function fetchSelectedText() {
-      let originalClipboard = "";
-      const marker = `__EMPTY_SELECTION_${Date.now()}__`;
-      try {
-        // 1. 기존 클립보드 백업
-        const cbText = await Clipboard.readText();
-        originalClipboard = cbText || "";
-
-        // 2. 클립보드에 임시 마커 주입 (Raycast API 명세에 맞춰 Clipboard.copy 사용)
-        await Clipboard.copy(marker);
-
-        // 3. getSelectedText 호출 (Cmd+C 시뮬레이션 트리거)
-        const text = await getSelectedText();
-
-        // 4. 결과물이 마커와 같지 않고 존재할 때만 드래그 텍스트로 인정
-        if (text && text !== marker && text.trim().length > 0) {
-          const trimmed = text.trim();
-          setSearchText(trimmed); // 검색창 텍스트 초기값으로 채움
-          handleSearch(trimmed, selectedTone);
-        }
-      } catch {
-        // 선택된 텍스트가 없는 경우는 조용히 넘어감
-      } finally {
-        // 5. 사용자의 원래 클립보드 복구 (Raycast API 명세에 맞춰 Clipboard.copy 사용)
-        if (originalClipboard && originalClipboard !== marker) {
-          await Clipboard.copy(originalClipboard);
-        }
-      }
-    }
-    fetchSelectedText();
-  }, []);
+  useSelectedText((text) => {
+    setSearchText(text);
+    handleSearch(text, selectedTone);
+  });
 
   const showTriggerItem =
     searchText.trim().length > 0 &&
