@@ -1,6 +1,7 @@
 export interface Preferences {
   geminiApiKey: string;
   configFilePath?: string;
+  suggestionCount?: string;
 }
 
 export interface DraftOption {
@@ -16,6 +17,5 @@ export interface ToneOption {
 }
 
 export interface ConfigSchema {
-  customBasePrompt?: string;
   customTones?: ToneOption[];
 }

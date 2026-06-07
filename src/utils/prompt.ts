@@ -1,6 +1,6 @@
 import { getPreferenceValues } from "@raycast/api";
 import { Preferences } from "../types";
-import { getActiveTones, loadConfigFile, DEFAULT_TONES } from "./config";
+import { getActiveTones, DEFAULT_TONES } from "./config";
 
 const DEFAULT_BASE_PROMPT = `You are an expert English translator and drafting assistant.
 The user has provided this text (which could be in Korean or English):
@@ -10,7 +10,7 @@ Your task is to translate this text into English (if it is in Korean) or refine/
 {toneInstruction}
 {customInstruction}
 
-Provide 3 different versions of the English text that fit these requirements.
+Provide {suggestionCount} different versions of the English text that fit these requirements.
 For each version, you must also provide a brief, helpful explanation in Korean describing why this version is appropriate, its nuances, or what changes were made.
 
 Output ONLY a raw JSON array of objects.
@@ -38,11 +38,12 @@ export function getPrompt(text: string, tone: string, customInstruction?: string
     ? `Additionally, you MUST strictly follow this custom user requirement: "${customInstruction}"`
     : "";
 
-  const config = loadConfigFile(prefs);
-  const basePrompt = config?.customBasePrompt?.trim() || DEFAULT_BASE_PROMPT;
+  const basePrompt = DEFAULT_BASE_PROMPT;
+  const count = prefs.suggestionCount || "3";
 
   return basePrompt
     .replace(/{text}/g, text)
     .replace(/{toneInstruction}/g, toneInstruction)
-    .replace(/{customInstruction}/g, customPart);
+    .replace(/{customInstruction}/g, customPart)
+    .replace(/{suggestionCount}/g, count);
 }

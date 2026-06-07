@@ -48,9 +48,24 @@
     {
       "name": "configFilePath",
       "title": "JSON Configuration File",
-      "description": "Select a custom JSON configuration file (e.g., config.json) for prompt template and custom tones.",
+      "description": "Select a custom JSON configuration file (e.g., config.json) for custom tones.",
       "type": "file",
       "required": false
+    },
+    {
+      "name": "suggestionCount",
+      "title": "Number of Suggestions",
+      "description": "How many English versions Gemini should suggest",
+      "type": "dropdown",
+      "default": "3",
+      "required": false,
+      "data": [
+        { "title": "1 Suggestion", "value": "1" },
+        { "title": "2 Suggestions", "value": "2" },
+        { "title": "3 Suggestions (Default)", "value": "3" },
+        { "title": "4 Suggestions", "value": "4" },
+        { "title": "5 Suggestions", "value": "5" }
+      ]
     }
   ],
   "title": "EngFix"
