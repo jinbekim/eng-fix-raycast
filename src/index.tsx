@@ -1,5 +1,16 @@
-import { ActionPanel, Action, List, Form, Clipboard, getSelectedText, showToast, Toast, getPreferenceValues, useNavigation } from "@raycast/api";
-import { useState, useEffect, useRef } from "react";
+import {
+  ActionPanel,
+  Action,
+  List,
+  Form,
+  Clipboard,
+  getSelectedText,
+  showToast,
+  Toast,
+  getPreferenceValues,
+  useNavigation,
+} from "@raycast/api";
+import { useState, useEffect } from "react";
 
 interface Preferences {
   geminiApiKey: string;
@@ -15,24 +26,31 @@ function getPrompt(text: string, tone: string, customInstruction?: string) {
   let toneInstruction = "";
   switch (tone) {
     case "professional":
-      toneInstruction = "Write in a professional, polite, and formal tone, suitable for business emails, official correspondence, or corporate communications.";
+      toneInstruction =
+        "Write in a professional, polite, and formal tone, suitable for business emails, official correspondence, or corporate communications.";
       break;
     case "casual":
-      toneInstruction = "Write in a casual, friendly, and conversational tone, suitable for everyday messaging, social media, or talking to colleagues/friends.";
+      toneInstruction =
+        "Write in a casual, friendly, and conversational tone, suitable for everyday messaging, social media, or talking to colleagues/friends.";
       break;
     case "concise":
-      toneInstruction = "Write in a highly concise, direct, and straight-to-the-point tone. Avoid unnecessary words while keeping it grammatically correct and natural.";
+      toneInstruction =
+        "Write in a highly concise, direct, and straight-to-the-point tone. Avoid unnecessary words while keeping it grammatically correct and natural.";
       break;
     case "academic":
-      toneInstruction = "Write in an academic, formal, and sophisticated tone, suitable for research papers, essays, or formal reports using advanced vocabulary.";
+      toneInstruction =
+        "Write in an academic, formal, and sophisticated tone, suitable for research papers, essays, or formal reports using advanced vocabulary.";
       break;
     case "general":
     default:
-      toneInstruction = "Correct the grammar, fix awkward phrasing, and make it sound natural and like a native English speaker.";
+      toneInstruction =
+        "Correct the grammar, fix awkward phrasing, and make it sound natural and like a native English speaker.";
       break;
   }
 
-  const customPart = customInstruction ? `Additionally, you MUST strictly follow this custom user requirement: "${customInstruction}"` : "";
+  const customPart = customInstruction
+    ? `Additionally, you MUST strictly follow this custom user requirement: "${customInstruction}"`
+    : "";
 
   return `You are an expert English translator and drafting assistant.
 The user has provided this text (which could be in Korean or English):
@@ -60,15 +78,21 @@ Only output the JSON array and nothing else. Do not wrap it in markdown block ta
 }
 
 // Gemini API 호출 공통 함수
-async function fetchGeminiDrafts(apiKey: string, prompt: string): Promise<DraftOption[]> {
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.4 }
-    })
-  });
+async function fetchGeminiDrafts(
+  apiKey: string,
+  prompt: string,
+): Promise<DraftOption[]> {
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.4 },
+      }),
+    },
+  );
 
   const data = (await response.json()) as any;
 
@@ -78,12 +102,12 @@ async function fetchGeminiDrafts(apiKey: string, prompt: string): Promise<DraftO
 
   const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
   let jsonStr = responseText.trim();
-  
+
   if (jsonStr.startsWith("```")) {
     jsonStr = jsonStr.replace(/^```[a-zA-Z]*\s*/, "").replace(/\s*```$/, "");
   }
   jsonStr = jsonStr.trim();
-  
+
   const parsed = JSON.parse(jsonStr);
   if (Array.isArray(parsed)) {
     return parsed;
@@ -94,7 +118,10 @@ async function fetchGeminiDrafts(apiKey: string, prompt: string): Promise<DraftO
 // 1. 결과 리스트 컴포넌트 (상세 영작 폼에서 사용)
 function DraftResultList(props: { options: DraftOption[] }) {
   return (
-    <List navigationTitle="AI 영작 결과" isShowingDetail={props.options.length > 0}>
+    <List
+      navigationTitle="AI 영작 결과"
+      isShowingDetail={props.options.length > 0}
+    >
       <List.Section title="AI 제안 영작문">
         {props.options.map((opt, idx) => (
           <List.Item
@@ -108,7 +135,10 @@ function DraftResultList(props: { options: DraftOption[] }) {
             actions={
               <ActionPanel>
                 <Action.Paste title="Paste Correction" content={opt.text} />
-                <Action.CopyToClipboard title="Copy to Clipboard" content={opt.text} />
+                <Action.CopyToClipboard
+                  title="Copy to Clipboard"
+                  content={opt.text}
+                />
               </ActionPanel>
             }
           />
@@ -119,7 +149,11 @@ function DraftResultList(props: { options: DraftOption[] }) {
 }
 
 // 2. 상세 커스텀 영작 폼 컴포넌트 (Form)
-function DetailDraftForm(props: { defaultText: string; defaultTone: string; geminiApiKey: string }) {
+function DetailDraftForm(props: {
+  defaultText: string;
+  defaultTone: string;
+  geminiApiKey: string;
+}) {
   const { push } = useNavigation();
   const [isLoading, setIsLoading] = useState(false);
   const [text, setText] = useState(props.defaultText);
@@ -128,12 +162,20 @@ function DetailDraftForm(props: { defaultText: string; defaultTone: string; gemi
 
   const handleSubmit = async () => {
     if (!text.trim()) {
-      showToast({ title: "Text is empty", message: "Please type some text first.", style: Toast.Style.Failure });
+      showToast({
+        title: "Text is empty",
+        message: "Please type some text first.",
+        style: Toast.Style.Failure,
+      });
       return;
     }
     const apiKey = props.geminiApiKey?.trim();
     if (!apiKey) {
-      showToast({ title: "API Key Error", message: "Gemini API Key가 비어있습니다. 설정에서 입력해 주세요.", style: Toast.Style.Failure });
+      showToast({
+        title: "API Key Error",
+        message: "Gemini API Key가 비어있습니다. 설정에서 입력해 주세요.",
+        style: Toast.Style.Failure,
+      });
       return;
     }
     setIsLoading(true);
@@ -145,7 +187,11 @@ function DetailDraftForm(props: { defaultText: string; defaultTone: string; gemi
       push(<DraftResultList options={results} />);
     } catch (e: any) {
       console.error(e);
-      showToast({ title: "Error", message: e.message, style: Toast.Style.Failure });
+      showToast({
+        title: "Error",
+        message: e.message,
+        style: Toast.Style.Failure,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -167,11 +213,25 @@ function DetailDraftForm(props: { defaultText: string; defaultTone: string; gemi
         value={text}
         onChange={setText}
       />
-      <Form.Dropdown id="tone" title="Tone Style" value={tone} onChange={setTone}>
+      <Form.Dropdown
+        id="tone"
+        title="Tone Style"
+        value={tone}
+        onChange={setTone}
+      >
         <Form.Dropdown.Item title="General (기본 교정)" value="general" />
-        <Form.Dropdown.Item title="Polite & Professional (비즈니스 이메일)" value="professional" />
-        <Form.Dropdown.Item title="Casual & Friendly (일상 회화/메신저)" value="casual" />
-        <Form.Dropdown.Item title="Concise & Direct (간결하게)" value="concise" />
+        <Form.Dropdown.Item
+          title="Polite & Professional (비즈니스 이메일)"
+          value="professional"
+        />
+        <Form.Dropdown.Item
+          title="Casual & Friendly (일상 회화/메신저)"
+          value="casual"
+        />
+        <Form.Dropdown.Item
+          title="Concise & Direct (간결하게)"
+          value="concise"
+        />
         <Form.Dropdown.Item title="Academic (논문/보고서)" value="academic" />
       </Form.Dropdown>
       <Form.TextField
@@ -187,16 +247,42 @@ function DetailDraftForm(props: { defaultText: string; defaultTone: string; gemi
 
 // 3. 메인 번역/영작 뷰 (List)
 export default function Command() {
-  const [originalText, setOriginalText] = useState("");
   const [searchText, setSearchText] = useState("");
-  const [debouncedSearchText, setDebouncedSearchText] = useState("");
   const [selectedTone, setSelectedTone] = useState("general");
   const [correctedOptions, setCorrectedOptions] = useState<DraftOption[]>([]);
+  const [resultsText, setResultsText] = useState("");
+  const [resultsTone, setResultsTone] = useState("general");
   const [isLoading, setIsLoading] = useState(false);
   const preferences = getPreferenceValues<Preferences>();
 
-  // 중복 API 호출 방지를 위한 ref
-  const lastCallRef = useRef({ text: "", tone: "" });
+  const handleSearch = async (targetText: string, tone: string) => {
+    if (!targetText.trim()) return;
+    setIsLoading(true);
+    showToast({ title: "Asking Gemini...", style: Toast.Style.Animated });
+    try {
+      const apiKey = preferences.geminiApiKey?.trim();
+      if (!apiKey) {
+        throw new Error(
+          "Gemini API Key가 비어있습니다. 설정에서 입력해 주세요.",
+        );
+      }
+      const promptText = getPrompt(targetText, tone);
+      const results = await fetchGeminiDrafts(apiKey, promptText);
+      setCorrectedOptions(results);
+      setResultsText(targetText);
+      setResultsTone(tone);
+      showToast({ title: "Corrections ready!", style: Toast.Style.Success });
+    } catch (e: any) {
+      console.error(e);
+      showToast({
+        title: "Error",
+        message: e.message,
+        style: Toast.Style.Failure,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // 최초 마운트 시 드래그한 텍스트 감지 (클립보드 폴백 버그 방지)
   useEffect(() => {
@@ -213,13 +299,12 @@ export default function Command() {
 
         // 3. getSelectedText 호출 (Cmd+C 시뮬레이션 트리거)
         const text = await getSelectedText();
-        
+
         // 4. 결과물이 마커와 같지 않고 존재할 때만 드래그 텍스트로 인정
         if (text && text !== marker && text.trim().length > 0) {
           const trimmed = text.trim();
-          setOriginalText(trimmed);
-          setSearchText(trimmed);          // 검색창 텍스트 초기값으로 채움
-          setDebouncedSearchText(trimmed); // 즉시 API 트리거
+          setSearchText(trimmed); // 검색창 텍스트 초기값으로 채움
+          handleSearch(trimmed, selectedTone);
         }
       } catch {
         // 선택된 텍스트가 없는 경우는 조용히 넘어감
@@ -233,64 +318,9 @@ export default function Command() {
     fetchSelectedText();
   }, []);
 
-  // 검색어 입력 디바운스 처리 (800ms로 증가하여 타이핑 중 빈번한 호출 제어)
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchText(searchText.trim());
-    }, 800);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchText]);
-
-  // 대상 텍스트 또는 톤이 바뀌면 API 자동 호출
-  useEffect(() => {
-    // 사용자가 검색창에 타이핑하는 중에는 API 호출을 유보함
-    if (searchText.trim() !== debouncedSearchText) {
-      return;
-    }
-
-    const targetText = debouncedSearchText || originalText;
-
-    if (!targetText) {
-      setCorrectedOptions([]);
-      return;
-    }
-
-    // 이미 같은 텍스트와 톤으로 호출된 상태라면 불필요한 API 요청 생략
-    if (lastCallRef.current.text === targetText && lastCallRef.current.tone === selectedTone) {
-      return;
-    }
-
-    const loadDrafts = async () => {
-      setIsLoading(true);
-      showToast({ title: "Asking Gemini...", style: Toast.Style.Animated });
-      try {
-        const apiKey = preferences.geminiApiKey?.trim();
-        if (!apiKey) {
-          throw new Error("Gemini API Key가 비어있습니다. 설정에서 입력해 주세요.");
-        }
-        const promptText = getPrompt(targetText, selectedTone);
-        const results = await fetchGeminiDrafts(apiKey, promptText);
-        setCorrectedOptions(results);
-        
-        // 성공적으로 가져오면 마지막 호출 기록 갱신
-        lastCallRef.current = { text: targetText, tone: selectedTone };
-        
-        showToast({ title: "Corrections ready!", style: Toast.Style.Success });
-      } catch (e: any) {
-        console.error(e);
-        showToast({ title: "Error", message: e.message, style: Toast.Style.Failure });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadDrafts();
-  }, [debouncedSearchText, originalText, selectedTone]);
-
-  const targetText = debouncedSearchText || originalText;
+  const showTriggerItem =
+    searchText.trim().length > 0 &&
+    (searchText.trim() !== resultsText || selectedTone !== resultsTone);
 
   return (
     <List
@@ -298,7 +328,7 @@ export default function Command() {
       searchText={searchText}
       onSearchTextChange={setSearchText}
       searchBarPlaceholder="번역/영작할 문장을 입력하거나 검색..."
-      isShowingDetail={correctedOptions.length > 0}
+      isShowingDetail={correctedOptions.length > 0 && !showTriggerItem}
       searchBarAccessory={
         <List.Dropdown
           tooltip="Select Tone"
@@ -313,8 +343,41 @@ export default function Command() {
         </List.Dropdown>
       }
     >
-      {targetText ? (
-        <List.Section title={`입력 문장: ${targetText}`}>
+      {!searchText.trim() ? (
+        <List.EmptyView
+          title="문장을 입력하거나 텍스트를 선택하세요"
+          description="구글번역기처럼 텍스트를 입력하고 Enter를 누르거나, 마우스로 문장을 드래그 선택해 보세요."
+          actions={
+            <ActionPanel>
+              <Action.Push
+                title="Customize with Prompt (Form)"
+                target={
+                  <DetailDraftForm
+                    defaultText=""
+                    defaultTone={selectedTone}
+                    geminiApiKey={preferences.geminiApiKey}
+                  />
+                }
+              />
+            </ActionPanel>
+          }
+        />
+      ) : showTriggerItem ? (
+        <List.Item
+          icon="✨"
+          title={`"${searchText.trim()}" 번역/영작 생성하기`}
+          subtitle="Enter 키를 누르면 AI 영작이 시작됩니다."
+          actions={
+            <ActionPanel>
+              <Action
+                title="AI 영작 실행"
+                onAction={() => handleSearch(searchText, selectedTone)}
+              />
+            </ActionPanel>
+          }
+        />
+      ) : (
+        <List.Section title={`입력 문장: ${resultsText}`}>
           {correctedOptions.map((opt, idx) => (
             <List.Item
               key={idx}
@@ -327,10 +390,19 @@ export default function Command() {
               actions={
                 <ActionPanel>
                   <Action.Paste title="Paste Correction" content={opt.text} />
-                  <Action.CopyToClipboard title="Copy to Clipboard" content={opt.text} />
+                  <Action.CopyToClipboard
+                    title="Copy to Clipboard"
+                    content={opt.text}
+                  />
                   <Action.Push
                     title="Customize with Prompt (Form)"
-                    target={<DetailDraftForm defaultText={targetText} defaultTone={selectedTone} geminiApiKey={preferences.geminiApiKey} />}
+                    target={
+                      <DetailDraftForm
+                        defaultText={resultsText}
+                        defaultTone={selectedTone}
+                        geminiApiKey={preferences.geminiApiKey}
+                      />
+                    }
                     shortcut={{ modifiers: ["cmd"], key: "e" }}
                   />
                 </ActionPanel>
@@ -338,21 +410,7 @@ export default function Command() {
             />
           ))}
         </List.Section>
-      ) : (
-        <List.EmptyView
-          title="문장을 입력하거나 텍스트를 선택하세요"
-          description="구글번역기처럼 텍스트를 입력하거나, 마우스로 문장을 드래그 선택한 후 단축키를 눌러보세요."
-          actions={
-            <ActionPanel>
-              <Action.Push
-                title="Customize with Prompt (Form)"
-                target={<DetailDraftForm defaultText="" defaultTone={selectedTone} geminiApiKey={preferences.geminiApiKey} />}
-              />
-            </ActionPanel>
-          }
-        />
       )}
     </List>
   );
 }
-
