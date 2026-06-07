@@ -2,225 +2,16 @@ import {
   ActionPanel,
   Action,
   List,
-  Form,
   Clipboard,
   getSelectedText,
   showToast,
   Toast,
   getPreferenceValues,
-  useNavigation,
 } from "@raycast/api";
 import { useState, useEffect } from "react";
-
-interface Preferences {
-  geminiApiKey: string;
-}
-
-interface DraftOption {
-  text: string;
-  explanation: string;
-}
-
-// 톤 별 Gemini 프롬프트 세부 지침 생성 함수
-function getPrompt(text: string, tone: string, customInstruction?: string) {
-  let toneInstruction = "";
-  switch (tone) {
-    case "professional":
-      toneInstruction =
-        "Write in a professional, polite, and formal tone, suitable for business emails, official correspondence, or corporate communications.";
-      break;
-    case "casual":
-      toneInstruction =
-        "Write in a casual, friendly, and conversational tone, suitable for everyday messaging, social media, or talking to colleagues/friends.";
-      break;
-    case "concise":
-      toneInstruction =
-        "Write in a highly concise, direct, and straight-to-the-point tone. Avoid unnecessary words while keeping it grammatically correct and natural.";
-      break;
-    case "academic":
-      toneInstruction =
-        "Write in an academic, formal, and sophisticated tone, suitable for research papers, essays, or formal reports using advanced vocabulary.";
-      break;
-    case "general":
-    default:
-      toneInstruction =
-        "Correct the grammar, fix awkward phrasing, and make it sound natural and like a native English speaker.";
-      break;
-  }
-
-  const customPart = customInstruction
-    ? `Additionally, you MUST strictly follow this custom user requirement: "${customInstruction}"`
-    : "";
-
-  return `You are an expert English translator and drafting assistant.
-The user has provided this text (which could be in Korean or English):
-"${text}"
-
-Your task is to translate this text into English (if it is in Korean) or refine/improve the English (if it is already in English), tailored to the following tone requirements:
-${toneInstruction}
-${customPart}
-
-Provide 3 different versions of the English text that fit these requirements.
-For each version, you must also provide a brief, helpful explanation in Korean describing why this version is appropriate, its nuances, or what changes were made.
-
-Output ONLY a raw JSON array of objects.
-Each object must have exactly two keys:
-1. "text" : The generated/corrected English text.
-2. "explanation" : A short explanation in Korean.
-
-Example Output:
-[
-  { "text": "Hello, how are you?", "explanation": "가장 기본적이고 널리 쓰이는 정중한 인사말입니다." },
-  { "text": "Hope you're doing well.", "explanation": "친근하면서도 비즈니스 이메일 서두에 쓰기 좋은 표현입니다." },
-  { "text": "I hope this email finds you well.", "explanation": "격식 있는 비즈니스 서신에서 주로 사용되는 표현입니다." }
-]
-Only output the JSON array and nothing else. Do not wrap it in markdown block tags like \`\`\`json.`;
-}
-
-// Gemini API 호출 공통 함수
-async function fetchGeminiDrafts(apiKey: string, prompt: string): Promise<DraftOption[]> {
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.4 },
-      }),
-    },
-  );
-
-  const data = (await response.json()) as any;
-
-  if (!response.ok) {
-    throw new Error(data?.error?.message || "Unknown API Error");
-  }
-
-  const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-  let jsonStr = responseText.trim();
-
-  if (jsonStr.startsWith("```")) {
-    jsonStr = jsonStr.replace(/^```[a-zA-Z]*\s*/, "").replace(/\s*```$/, "");
-  }
-  jsonStr = jsonStr.trim();
-
-  const parsed = JSON.parse(jsonStr);
-  if (Array.isArray(parsed)) {
-    return parsed;
-  }
-  throw new Error("Invalid response format from Gemini");
-}
-
-// 1. 결과 리스트 컴포넌트 (상세 영작 폼에서 사용)
-function DraftResultList(props: { options: DraftOption[] }) {
-  return (
-    <List navigationTitle="AI 영작 결과" isShowingDetail={props.options.length > 0}>
-      <List.Section title="AI 제안 영작문">
-        {props.options.map((opt, idx) => (
-          <List.Item
-            key={idx}
-            title={opt.text}
-            detail={
-              <List.Item.Detail
-                markdown={`### 💡 영작 제안 ${idx + 1}\n\n${opt.text}\n\n---\n\n### 📝 설명 (뉘앙스)\n${opt.explanation}`}
-              />
-            }
-            actions={
-              <ActionPanel>
-                <Action.Paste title="Paste Correction" content={opt.text} />
-                <Action.CopyToClipboard title="Copy to Clipboard" content={opt.text} />
-              </ActionPanel>
-            }
-          />
-        ))}
-      </List.Section>
-    </List>
-  );
-}
-
-// 2. 상세 커스텀 영작 폼 컴포넌트 (Form)
-function DetailDraftForm(props: {
-  defaultText: string;
-  defaultTone: string;
-  geminiApiKey: string;
-}) {
-  const { push } = useNavigation();
-  const [isLoading, setIsLoading] = useState(false);
-  const [text, setText] = useState(props.defaultText);
-  const [tone, setTone] = useState(props.defaultTone);
-  const [customPrompt, setCustomPrompt] = useState("");
-
-  const handleSubmit = async () => {
-    if (!text.trim()) {
-      showToast({
-        title: "Text is empty",
-        message: "Please type some text first.",
-        style: Toast.Style.Failure,
-      });
-      return;
-    }
-    const apiKey = props.geminiApiKey?.trim();
-    if (!apiKey) {
-      showToast({
-        title: "API Key Error",
-        message: "Gemini API Key가 비어있습니다. 설정에서 입력해 주세요.",
-        style: Toast.Style.Failure,
-      });
-      return;
-    }
-    setIsLoading(true);
-    showToast({ title: "Asking Gemini...", style: Toast.Style.Animated });
-    try {
-      const promptText = getPrompt(text, tone, customPrompt);
-      const results = await fetchGeminiDrafts(apiKey, promptText);
-      showToast({ title: "Drafts generated!", style: Toast.Style.Success });
-      push(<DraftResultList options={results} />);
-    } catch (e: any) {
-      console.error(e);
-      showToast({
-        title: "Error",
-        message: e.message,
-        style: Toast.Style.Failure,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <Form
-      isLoading={isLoading}
-      actions={
-        <ActionPanel>
-          <Action.SubmitForm title="Generate English" onSubmit={handleSubmit} />
-        </ActionPanel>
-      }
-    >
-      <Form.TextArea
-        id="text"
-        title="Source Text"
-        placeholder="영작하고 싶거나 수정하고 싶은 문장을 입력하세요 (한글/영어 모두 가능)..."
-        value={text}
-        onChange={setText}
-      />
-      <Form.Dropdown id="tone" title="Tone Style" value={tone} onChange={setTone}>
-        <Form.Dropdown.Item title="General (기본 교정)" value="general" />
-        <Form.Dropdown.Item title="Polite & Professional (비즈니스 이메일)" value="professional" />
-        <Form.Dropdown.Item title="Casual & Friendly (일상 회화/메신저)" value="casual" />
-        <Form.Dropdown.Item title="Concise & Direct (간결하게)" value="concise" />
-        <Form.Dropdown.Item title="Academic (논문/보고서)" value="academic" />
-      </Form.Dropdown>
-      <Form.TextField
-        id="customPrompt"
-        title="Custom Instruction (AI 프롬프트)"
-        placeholder="예: 질문 형식으로 바꿔줘, 격식의 끝판왕으로 해줘, 문법 오류 짚어줘 등..."
-        value={customPrompt}
-        onChange={setCustomPrompt}
-      />
-    </Form>
-  );
-}
+import { Preferences, DraftOption } from "./types";
+import { getPrompt, fetchGeminiDrafts } from "./utils/gemini";
+import { DetailDraftForm } from "./components/DetailDraftForm";
 
 // 3. 메인 번역/영작 뷰 (List)
 export default function Command() {
@@ -247,7 +38,8 @@ export default function Command() {
       setResultsText(targetText);
       setResultsTone(tone);
       showToast({ title: "Corrections ready!", style: Toast.Style.Success });
-    } catch (e: any) {
+    } catch (error) {
+      const e = error as Error;
       console.error(e);
       showToast({
         title: "Error",
