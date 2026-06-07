@@ -78,10 +78,7 @@ Only output the JSON array and nothing else. Do not wrap it in markdown block ta
 }
 
 // Gemini API 호출 공통 함수
-async function fetchGeminiDrafts(
-  apiKey: string,
-  prompt: string,
-): Promise<DraftOption[]> {
+async function fetchGeminiDrafts(apiKey: string, prompt: string): Promise<DraftOption[]> {
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`,
     {
@@ -118,10 +115,7 @@ async function fetchGeminiDrafts(
 // 1. 결과 리스트 컴포넌트 (상세 영작 폼에서 사용)
 function DraftResultList(props: { options: DraftOption[] }) {
   return (
-    <List
-      navigationTitle="AI 영작 결과"
-      isShowingDetail={props.options.length > 0}
-    >
+    <List navigationTitle="AI 영작 결과" isShowingDetail={props.options.length > 0}>
       <List.Section title="AI 제안 영작문">
         {props.options.map((opt, idx) => (
           <List.Item
@@ -135,10 +129,7 @@ function DraftResultList(props: { options: DraftOption[] }) {
             actions={
               <ActionPanel>
                 <Action.Paste title="Paste Correction" content={opt.text} />
-                <Action.CopyToClipboard
-                  title="Copy to Clipboard"
-                  content={opt.text}
-                />
+                <Action.CopyToClipboard title="Copy to Clipboard" content={opt.text} />
               </ActionPanel>
             }
           />
@@ -213,25 +204,11 @@ function DetailDraftForm(props: {
         value={text}
         onChange={setText}
       />
-      <Form.Dropdown
-        id="tone"
-        title="Tone Style"
-        value={tone}
-        onChange={setTone}
-      >
+      <Form.Dropdown id="tone" title="Tone Style" value={tone} onChange={setTone}>
         <Form.Dropdown.Item title="General (기본 교정)" value="general" />
-        <Form.Dropdown.Item
-          title="Polite & Professional (비즈니스 이메일)"
-          value="professional"
-        />
-        <Form.Dropdown.Item
-          title="Casual & Friendly (일상 회화/메신저)"
-          value="casual"
-        />
-        <Form.Dropdown.Item
-          title="Concise & Direct (간결하게)"
-          value="concise"
-        />
+        <Form.Dropdown.Item title="Polite & Professional (비즈니스 이메일)" value="professional" />
+        <Form.Dropdown.Item title="Casual & Friendly (일상 회화/메신저)" value="casual" />
+        <Form.Dropdown.Item title="Concise & Direct (간결하게)" value="concise" />
         <Form.Dropdown.Item title="Academic (논문/보고서)" value="academic" />
       </Form.Dropdown>
       <Form.TextField
@@ -262,9 +239,7 @@ export default function Command() {
     try {
       const apiKey = preferences.geminiApiKey?.trim();
       if (!apiKey) {
-        throw new Error(
-          "Gemini API Key가 비어있습니다. 설정에서 입력해 주세요.",
-        );
+        throw new Error("Gemini API Key가 비어있습니다. 설정에서 입력해 주세요.");
       }
       const promptText = getPrompt(targetText, tone);
       const results = await fetchGeminiDrafts(apiKey, promptText);
@@ -390,10 +365,7 @@ export default function Command() {
               actions={
                 <ActionPanel>
                   <Action.Paste title="Paste Correction" content={opt.text} />
-                  <Action.CopyToClipboard
-                    title="Copy to Clipboard"
-                    content={opt.text}
-                  />
+                  <Action.CopyToClipboard title="Copy to Clipboard" content={opt.text} />
                   <Action.Push
                     title="Customize with Prompt (Form)"
                     target={

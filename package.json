@@ -1,11 +1,33 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "engfix",
-  "title": "EngFix",
   "description": "Correct English grammar using Gemini API directly from Raycast.",
-  "icon": "✨",
-  "author": "jinbeom",
   "license": "MIT",
+  "author": "jinbeom",
+  "scripts": {
+    "build": "ray build -e dist",
+    "dev": "ray develop",
+    "lint": "oxlint",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "prepublishOnly": "echo \"\\n\\nIt seems like you are trying to publish the Raycast extension to npm.\\n\\nIf you did intend to publish it to npm, remove the \\`prepublishOnly\\` script and rerun \\`npm publish\\` again.\\nIf you wanted to publish it to the Raycast Store instead, use \\`npm run publish\\` instead.\\n\\n\" && exit 1",
+    "publish": "npx @raycast/api@latest publish"
+  },
+  "dependencies": {
+    "@raycast/api": "^1.81.2",
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.8.10",
+    "@types/react": "18.2.0",
+    "oxfmt": "^0.53.0",
+    "oxlint": "^1.68.0",
+    "typescript": "^5.4.5"
+  },
+  "overrides": {
+    "@types/react": "18.2.0"
+  },
+  "icon": "✨",
   "commands": [
     {
       "name": "index",
@@ -24,25 +46,5 @@
       "required": true
     }
   ],
-  "dependencies": {
-    "@raycast/api": "^1.81.2",
-    "react": "^18.2.0"
-  },
-  "devDependencies": {
-    "@types/node": "20.8.10",
-    "@types/react": "18.2.0",
-    "oxlint": "^1.68.0",
-    "prettier": "^3.3.3",
-    "typescript": "^5.4.5"
-  },
-  "overrides": {
-    "@types/react": "18.2.0"
-  },
-  "scripts": {
-    "build": "ray build -e dist",
-    "dev": "ray develop",
-    "lint": "oxlint",
-    "prepublishOnly": "echo \"\\n\\nIt seems like you are trying to publish the Raycast extension to npm.\\n\\nIf you did intend to publish it to npm, remove the \\`prepublishOnly\\` script and rerun \\`npm publish\\` again.\\nIf you wanted to publish it to the Raycast Store instead, use \\`npm run publish\\` instead.\\n\\n\" && exit 1",
-    "publish": "npx @raycast/api@latest publish"
-  }
+  "title": "EngFix"
 }
