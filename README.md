@@ -17,6 +17,7 @@
    * **Casual & Friendly:** 친구나 동료와의 메신저 대화에 적합한 친근한 표현
    * **Concise & Direct:** 불필요한 단어를 뺀 직관적이고 간결한 표현
    * **Academic:** 에세이, 논문, 보고서용 학술적인 표현
+   * *(※ 외부 JSON 설정을 연동하여 나만의 톤을 추가하거나 불필요한 기본 톤을 숨길 수도 있습니다.)*
 
 3. **뉘앙스 설명 제공:**
    * 생성된 3가지 옵션마다 어떤 상황에 적합한지 한국어 설명이 함께 표시됩니다.
@@ -66,6 +67,47 @@ npm run dev
 1. [Google AI Studio](https://aistudio.google.com/)에서 무료로 Gemini API Key를 발급받습니다.
 2. Raycast에서 `Fix English` 명령어를 최초 실행하거나 익스텐션 설정화면으로 이동합니다.
 3. 발급받은 API Key를 **Gemini API Key** 설정 항목에 입력합니다.
+
+---
+
+## 고급 설정 (프롬프트 및 톤 커스터마이징) ⚙️
+
+AI의 번역/교정 뼈대가 되는 **기본 프롬프트 템플릿(Base Prompt)**을 바꾸거나, 드롭다운 목록에서 항상 선택할 수 있는 **톤(Tone Style) 목록**을 입맛에 맞게 커스터마이징할 수 있습니다.
+
+### 1. 설정 방법
+1. 프로젝트 루트에 기본 생성되어 있는 [engfix-config.json](file:///Users/jinbeom/Documents/antigravity/engfix-raycast/engfix-config.json) 파일을 참고하여 본인만의 JSON 설정 파일을 생성하거나 바로 연동합니다.
+2. Raycast 설정 화면(익스텐션 명령어 포커스 상태에서 `Cmd + Shift + ,` 입력)으로 이동합니다.
+3. **JSON Configuration File** 항목에서 작성한 JSON 파일의 경로를 지정합니다. (맥 네이티브 파일 선택기로 직접 파일을 선택할 수 있습니다.)
+4. 설정 경로를 비워두면 기존의 내장된 기본 프롬프트와 5가지 기본 톤으로 자동 롤백됩니다.
+
+### 2. JSON 설정 구조 예시
+```json
+{
+  // 1. AI에게 전달할 전체 프롬프트의 뼈대 (필요시 플레이스홀더를 변경/조합하여 사용)
+  "customBasePrompt": "You are a professional editor. Please proofread the following text: \"{text}\"\nTone request: {toneInstruction}\nAdditional instruction: {customInstruction}\n\nOutput a JSON array...",
+  
+  // 2. 톤 스타일 목록 정의 (추가 / 덮어쓰기 / 비활성화 가능)
+  "customTones": [
+    // 새로운 톤 추가
+    {
+      "id": "funny",
+      "title": "Funny (재치 있게)",
+      "instruction": "Write in a highly funny, humorous, and entertaining tone."
+    },
+    // 기존의 기본 톤 비활성화 (Academic 톤 숨기기)
+    {
+      "id": "academic",
+      "disabled": true
+    }
+  ]
+}
+```
+
+### 3. 프롬프트 플레이스홀더 규칙
+`customBasePrompt`를 직접 편집할 때는 아래 3가지 예약어를 포함해 주어야 해당 부분에 동적으로 데이터가 치환되어 전송됩니다:
+* `{text}`: 번역/교정 대상 입력 문장
+* `{toneInstruction}`: 드롭다운에서 선택한 톤 스타일에 매칭된 지침 지시문
+* `{customInstruction}`: Form 세부 조정 화면에서 직접 추가 기입한 요청사항
 
 ---
 
