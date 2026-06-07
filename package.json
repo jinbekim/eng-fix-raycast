@@ -3,7 +3,7 @@
   "name": "engfix",
   "description": "Correct English grammar using Gemini API directly from Raycast.",
   "license": "MIT",
-  "author": "jinbeom",
+  "author": "jinbekim",
   "scripts": {
     "build": "ray build -e dist",
     "dev": "ray develop",
