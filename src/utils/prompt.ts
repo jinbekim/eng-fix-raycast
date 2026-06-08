@@ -32,7 +32,10 @@ The user's original text (Korean/English):
 The proposed English correction/translation is:
 "{correctedText}"
 
-Provide a structured markdown bulleted list of key vocabulary, expressions, phrases, idioms, or grammatical structures used in the proposed English text along with their Korean meanings and usage notes.
+Provide a structured markdown bulleted list containing:
+1. (If the original text was in English and had grammatical errors or awkward phrasing) What was fixed and why, explained in Korean (한국어로 설명).
+2. Key vocabulary, expressions, phrases, idioms, or grammatical structures used in the proposed English text along with their Korean meanings and usage notes.
+
 Format your response as a clean markdown list (e.g. "- word/phrase: explanation").
 Only output the markdown list directly. Do not wrap it in JSON, code blocks, or markdown code block tags. Just output the explanation text.`;
 

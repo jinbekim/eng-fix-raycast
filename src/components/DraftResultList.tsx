@@ -57,11 +57,11 @@ export function DraftResultList(props: { options: DraftOption[]; originalText: s
     let vocabSection = "";
     if (opt.isLoadingVocabulary) {
       vocabSection =
-        "\n\n---\n\n### 🔤 주요 표현 및 단어 분석\n⏳ 어휘 분석을 생성하고 있습니다...";
+        "\n\n---\n\n### 🔤 교정 노트 및 어휘 분석\n⏳ 어휘 분석을 생성하고 있습니다...";
     } else if (opt.vocabularyError) {
-      vocabSection = `\n\n---\n\n### 🔤 주요 표현 및 단어 분석\n❌ ${opt.vocabularyError}`;
+      vocabSection = `\n\n---\n\n### 🔤 교정 노트 및 어휘 분석\n❌ ${opt.vocabularyError}`;
     } else if (opt.vocabulary) {
-      vocabSection = `\n\n---\n\n### 🔤 주요 표현 및 단어 분석\n${opt.vocabulary}`;
+      vocabSection = `\n\n---\n\n### 🔤 교정 노트 및 어휘 분석\n${opt.vocabulary}`;
     } else {
       vocabSection = `\n\n---\n\n💡 단축키 **Cmd + T** 또는 우측 액션 메뉴에서 **"어휘 분석 로드"**를 누르시면 주요 표현 및 어휘 해설을 추가로 볼 수 있습니다.`;
     }
