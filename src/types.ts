@@ -7,7 +7,7 @@ export interface Preferences {
 
 export interface DraftOption {
   text: string;
-  explanation: string;
+  translation: string;
   vocabulary?: string;
   isLoadingVocabulary?: boolean;
   vocabularyError?: string;

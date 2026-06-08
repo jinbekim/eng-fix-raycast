@@ -52,7 +52,7 @@ export function DraftResultList(props: { options: DraftOption[]; originalText: s
   };
 
   const getDetailMarkdown = (opt: DraftOption, idx: number) => {
-    const nuanceSection = `### 📝 설명 (뉘앙스)\n${opt.explanation || "뉘앙스 설명이 없습니다."}`;
+    const nuanceSection = `### 📝 자연스러운 한글 해석\n${opt.translation || "해석이 없습니다."}`;
 
     let vocabSection = "";
     if (opt.isLoadingVocabulary) {

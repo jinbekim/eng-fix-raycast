@@ -11,17 +11,17 @@ Your task is to translate this text into English (if it is in Korean) or refine/
 {customInstruction}
 
 Provide {suggestionCount} different versions of the English text that fit these requirements.
-For each version, you must also provide a brief, helpful explanation in Korean describing why this version is appropriate, its nuances, or what changes were made (1-2 sentences).
+For each version, you must also provide a natural Korean translation that accurately reflects the specific nuance and tone of that English version.
 
 Output ONLY a raw JSON array of objects.
 Each object must have exactly two keys:
 1. "text" : The generated/corrected English text.
-2. "explanation" : A short explanation in Korean focusing on the nuance and context.
+2. "translation" : A natural Korean translation reflecting the nuance of the English text.
 
 Example Output:
 [
-  { "text": "Hello, how are you?", "explanation": "가장 기본적이고 널리 쓰이는 정중한 인사말입니다." },
-  { "text": "I hope this email finds you well.", "explanation": "격식 있는 비즈니스 서신에서 주로 사용되는 표현입니다." }
+  { "text": "Hello, how are you?", "translation": "안녕하세요, 잘 지내시죠?" },
+  { "text": "I hope this email finds you well.", "translation": "이번 이메일을 통해 안녕하신지 여쭙고자 합니다." }
 ]
 Only output the JSON array and nothing else. Do not wrap it in markdown block tags like \`\`\`json.`;
 

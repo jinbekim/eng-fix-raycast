@@ -45,16 +45,16 @@ export async function fetchGeminiDrafts(apiKey: string, prompt: string): Promise
   if (Array.isArray(parsed)) {
     return parsed.map((item: unknown) => {
       if (item && typeof item === "object" && "text" in item) {
-        const obj = item as { text: unknown; explanation?: unknown };
+        const obj = item as { text: unknown; translation?: unknown };
         return {
           text: String(obj.text || ""),
-          explanation: String(obj.explanation || ""),
+          translation: String(obj.translation || ""),
         };
       }
       if (typeof item === "string") {
-        return { text: item, explanation: "" };
+        return { text: item, translation: "" };
       }
-      return { text: String(item), explanation: "" };
+      return { text: String(item), translation: "" };
     });
   }
   throw new Error("Invalid response format from Gemini");
